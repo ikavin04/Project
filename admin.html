@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Canteen - Admin Dashboard</title>
+    <title>Smart Canteen - Admin Panel</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -27,7 +26,6 @@
             <button class="tab-button active" onclick="showTab('dashboard')">Dashboard</button>
             <button class="tab-button" onclick="showTab('menu')">Menu Management</button>
             <button class="tab-button" onclick="showTab('orders')">Order Management</button>
-            <button class="tab-button" onclick="showTab('analytics')">Analytics</button>
         </div>
 
         
@@ -199,51 +197,7 @@
             </div>
         </div>
 
-        
-        <div id="analytics" class="tab-content">
-            <div class="analytics-dashboard">
-                <h2>Analytics Dashboard</h2>
-                
-                <div class="analytics-section">
-                    <div class="chart-container">
-                        <h3>Revenue Trend (Last 7 Days)</h3>
-                        <canvas id="revenueChart"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <h3>Most Popular Items</h3>
-                        <canvas id="popularItemsChart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="analytics-section">
-                    <div class="chart-container">
-                        <h3>Orders by Status</h3>
-                        <canvas id="orderStatusChart"></canvas>
-                    </div>
-                    
-                    <div class="analytics-stats">
-                        <h3>Performance Metrics</h3>
-                        <div class="metric-item">
-                            <span class="metric-label">Average Order Value:</span>
-                            <span class="metric-value">₹<span id="avgOrderValue">0.00</span></span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Orders per Day:</span>
-                            <span class="metric-value" id="ordersPerDay">0</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Most Active Hour:</span>
-                            <span class="metric-value" id="mostActiveHour">-</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Customer Retention:</span>
-                            <span class="metric-value" id="customerRetention">0%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </main>
 
     
@@ -269,15 +223,12 @@
             window.location.href = 'user_dashboard.html';
         }
         
-        let revenueChart, popularItemsChart, orderStatusChart;
-        
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('adminName').textContent = `Welcome, ${currentUser.username}`;
             loadDashboardStats();
             loadMenuItems();
             loadOrders();
-            initializeCharts();
             startNotificationPolling();
         });
         
@@ -301,8 +252,6 @@
                 loadMenuItems();
             } else if (tabName === 'orders') {
                 loadOrders();
-            } else if (tabName === 'analytics') {
-                loadAnalytics();
             }
         }
         
@@ -559,162 +508,9 @@
             document.getElementById('orderDetailsModal').style.display = 'none';
         }
         
-        function initializeCharts() {
-            // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            revenueChart = new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Revenue (₹)',
-                        data: [],
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            // Popular Items Chart
-            const popularCtx = document.getElementById('popularItemsChart').getContext('2d');
-            popularItemsChart = new Chart(popularCtx, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Orders',
-                        data: [],
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            // Order Status Chart
-            const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
-            orderStatusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [
-                            '#FF6384',
-                            '#36A2EB',
-                            '#FFCE56'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            });
-        }
+
         
-        function loadAnalytics() {
-            const orders = getAllOrders();
-            
-            // Revenue trend (last 7 days)
-            const last7Days = [];
-            const revenueData = [];
-            
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toDateString();
-                
-                last7Days.push(date.toLocaleDateString());
-                
-                const dayRevenue = orders
-                    .filter(order => new Date(order.timestamp).toDateString() === dateStr)
-                    .reduce((sum, order) => sum + order.total_amount, 0);
-                
-                revenueData.push(dayRevenue);
-            }
-            
-            revenueChart.data.labels = last7Days;
-            revenueChart.data.datasets[0].data = revenueData;
-            revenueChart.update();
-            
-            // Most popular items
-            const itemCounts = {};
-            orders.forEach(order => {
-                order.items.forEach(item => {
-                    itemCounts[item.name] = (itemCounts[item.name] || 0) + item.quantity;
-                });
-            });
-            
-            const sortedItems = Object.entries(itemCounts)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5);
-            
-            popularItemsChart.data.labels = sortedItems.map(([name]) => name);
-            popularItemsChart.data.datasets[0].data = sortedItems.map(([,count]) => count);
-            popularItemsChart.update();
-            
-            // Order status distribution
-            const statusCounts = {
-                'Uncompleted': 0,
-                'Ready': 0,
-                'Completed': 0
-            };
-            
-            orders.forEach(order => {
-                statusCounts[order.status]++;
-            });
-            
-            orderStatusChart.data.labels = Object.keys(statusCounts);
-            orderStatusChart.data.datasets[0].data = Object.values(statusCounts);
-            orderStatusChart.update();
-            
-            // Performance metrics
-            const avgOrderValue = orders.length > 0 
-                ? orders.reduce((sum, order) => sum + order.total_amount, 0) / orders.length 
-                : 0;
-            
-            const ordersPerDay = orders.length > 0 
-                ? (orders.length / 7).toFixed(1) 
-                : 0;
-            
-            // Most active hour
-            const hourCounts = {};
-            orders.forEach(order => {
-                const hour = new Date(order.timestamp).getHours();
-                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-            });
-            
-            const mostActiveHour = Object.entries(hourCounts)
-                .sort(([,a], [,b]) => b - a)[0];
-            
-            const customerRetention = orders.length > 0 
-                ? ((orders.filter(order => 
-                    orders.filter(o => o.user_id === order.user_id).length > 1
-                  ).length / orders.length) * 100).toFixed(1)
-                : 0;
-            
-            document.getElementById('avgOrderValue').textContent = avgOrderValue.toFixed(2);
-            document.getElementById('ordersPerDay').textContent = ordersPerDay;
-            document.getElementById('mostActiveHour').textContent = 
-                mostActiveHour ? `${mostActiveHour[0]}:00 - ${parseInt(mostActiveHour[0]) + 1}:00` : '-';
-            document.getElementById('customerRetention').textContent = customerRetention + '%';
-        }
+
         
         function startNotificationPolling() {
             // Check for new orders every 30 seconds
