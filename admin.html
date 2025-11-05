@@ -101,11 +101,6 @@
                                 <input type="text" id="itemName" required>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="itemDescription">Description</label>
-                                <textarea id="itemDescription" rows="3"></textarea>
-                            </div>
-                            
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="itemPrice">Price (₹)</label>
@@ -446,7 +441,6 @@
             document.getElementById('formTitle').textContent = 'Edit Menu Item';
             document.getElementById('editItemId').value = itemId;
             document.getElementById('itemName').value = item.item_name;
-            document.getElementById('itemDescription').value = item.description;
             document.getElementById('itemPrice').value = item.price;
             document.getElementById('itemCategory').value = item.category;
             document.getElementById('itemAvailability').checked = item.availability;
@@ -763,7 +757,6 @@
             const itemId = document.getElementById('editItemId').value;
             const itemData = {
                 item_name: document.getElementById('itemName').value.trim(),
-                description: document.getElementById('itemDescription').value.trim(),
                 price: parseFloat(document.getElementById('itemPrice').value),
                 category: document.getElementById('itemCategory').value,
                 availability: document.getElementById('itemAvailability').checked

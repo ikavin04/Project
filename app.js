@@ -4,7 +4,6 @@ function initializeData() {
             {
                 id: 1,
                 item_name: 'Chicken Burger',
-                description: 'Grilled chicken patty with lettuce and tomato',
                 price: 120.00,
                 category: 'Main Course',
                 availability: true
@@ -12,7 +11,6 @@ function initializeData() {
             {
                 id: 2,
                 item_name: 'Vegetable Sandwich',
-                description: 'Fresh vegetables with mayo',
                 price: 80.00,
                 category: 'Snacks',
                 availability: true
@@ -20,7 +18,6 @@ function initializeData() {
             {
                 id: 3,
                 item_name: 'Coffee',
-                description: 'Hot brewed coffee',
                 price: 30.00,
                 category: 'Beverages',
                 availability: true
@@ -28,15 +25,13 @@ function initializeData() {
             {
                 id: 4,
                 item_name: 'Tea',
-                description: 'Indian masala tea',
-                price: 20.00,
+                price: 25.00,
                 category: 'Beverages',
                 availability: true
             },
             {
                 id: 5,
                 item_name: 'Pasta',
-                description: 'Italian style pasta with tomato sauce',
                 price: 150.00,
                 category: 'Main Course',
                 availability: true
@@ -44,15 +39,13 @@ function initializeData() {
             {
                 id: 6,
                 item_name: 'French Fries',
-                description: 'Crispy golden fries',
                 price: 60.00,
                 category: 'Snacks',
                 availability: true
             },
             {
                 id: 7,
-                item_name: 'Fruit Juice',
-                description: 'Fresh mixed fruit juice',
+                item_name: 'Fresh Juice',
                 price: 40.00,
                 category: 'Beverages',
                 availability: true
@@ -60,7 +53,6 @@ function initializeData() {
             {
                 id: 8,
                 item_name: 'Biryani',
-                description: 'Aromatic basmati rice with spices',
                 price: 180.00,
                 category: 'Main Course',
                 availability: true
@@ -159,7 +151,6 @@ function addMenuItem(itemData) {
     const newItem = {
         id: newId,
         item_name: itemData.item_name,
-        description: itemData.description || '',
         price: parseFloat(itemData.price),
         category: itemData.category,
         availability: itemData.availability !== false
@@ -177,7 +168,6 @@ function updateMenuItem(id, itemData) {
     menu[itemIndex] = {
         ...menu[itemIndex],
         item_name: itemData.item_name,
-        description: itemData.description || '',
         price: parseFloat(itemData.price),
         category: itemData.category,
         availability: itemData.availability !== false
