@@ -35,10 +35,13 @@
         
         <div class="dashboard-header">
             <h2>Welcome to Smart Canteen</h2>
-            <div class="filters">
-                <select id="categoryFilter" onchange="filterByCategory()">
-                    <option value="">All Categories</option>
-                </select>
+            <div class="menu-controls">
+                <div class="filter-item">
+                    <label for="categoryFilter">Browse by Category:</label>
+                    <select id="categoryFilter" onchange="filterByCategory()" class="category-filter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
             </div>
         </div>
 

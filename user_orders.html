@@ -30,15 +30,18 @@
     <main class="main-content">
         <div id="notification" class="notification hidden"></div>
         
-        <div class="orders-header">
+        <div class="page-header">
             <h2>My Orders</h2>
-            <div class="orders-filters">
-                <select id="statusFilter" onchange="filterOrders()">
-                    <option value="">All Orders</option>
-                    <option value="Uncompleted">Preparing</option>
-                    <option value="Ready">Ready</option>
-                    <option value="Completed">Completed</option>
-                </select>
+            <div class="filter-controls">
+                <div class="filter-item">
+                    <label for="statusFilter">Filter by Status:</label>
+                    <select id="statusFilter" onchange="filterOrders()" class="status-filter">
+                        <option value="">All Orders</option>
+                        <option value="Uncompleted">Preparing</option>
+                        <option value="Ready">Ready for Pickup</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
             </div>
         </div>
 

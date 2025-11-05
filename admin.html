@@ -159,16 +159,22 @@
         
         <div id="orders" class="tab-content">
             <div class="order-management">
-                <div class="order-header">
+                <div class="admin-section-header">
                     <h2>Order Management</h2>
-                    <div class="order-filters">
-                        <select id="orderStatusFilter" onchange="filterOrders()">
-                            <option value="">All Orders</option>
-                            <option value="Uncompleted">Uncompleted</option>
-                            <option value="Ready">Ready</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                        <input type="text" id="orderSearchInput" placeholder="Search by Order ID or Customer" oninput="filterOrders()">
+                    <div class="admin-controls">
+                        <div class="filter-group">
+                            <label for="orderStatusFilter">Filter by Status:</label>
+                            <select id="orderStatusFilter" onchange="filterOrders()" class="admin-select">
+                                <option value="">All Orders</option>
+                                <option value="Uncompleted">Pending</option>
+                                <option value="Ready">Ready for Pickup</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="search-group">
+                            <label for="orderSearchInput">Search Orders:</label>
+                            <input type="text" id="orderSearchInput" class="admin-search" placeholder="Enter Order ID or Customer Name" oninput="filterOrders()">
+                        </div>
                     </div>
                 </div>
                 

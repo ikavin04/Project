@@ -480,8 +480,30 @@ a:hover {
 .dashboard-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--gray-200);
+}
+.menu-controls {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+.category-filter {
+    padding: 10px 15px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--gray-800);
+    min-width: 200px;
+    transition: var(--transition);
+}
+.category-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 .dashboard-header h2 {
     color: var(--gray-800);
@@ -837,19 +859,45 @@ a:hover {
     gap: 15px;
     justify-content: center;
 }
-.orders-header {
+.page-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--gray-200);
 }
-.orders-filters select,
-.orders-filters input {
-    padding: 8px 12px;
-    border: 1px solid var(--gray-300);
+.filter-controls {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.filter-item label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-filter {
+    padding: 10px 15px;
+    border: 2px solid var(--gray-300);
     border-radius: var(--border-radius);
     font-size: 14px;
-    margin-left: 10px;
+    background: var(--white);
+    color: var(--gray-800);
+    min-width: 180px;
+    transition: var(--transition);
+}
+.status-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 .orders-container {
     display: grid;
@@ -1266,16 +1314,62 @@ a:hover {
     align-items: center;
     margin-bottom: 30px;
 }
-.order-filters {
+.admin-section-header {
     display: flex;
-    gap: 15px;
-    align-items: center;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--gray-200);
 }
-.status-select {
-    padding: 5px 10px;
-    border: 1px solid var(--gray-300);
+.admin-controls {
+    display: flex;
+    gap: 25px;
+    align-items: flex-end;
+}
+.filter-group,
+.search-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.filter-group label,
+.search-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.admin-select {
+    padding: 10px 15px;
+    border: 2px solid var(--gray-300);
     border-radius: var(--border-radius);
     font-size: 14px;
+    background: var(--white);
+    color: var(--gray-800);
+    min-width: 160px;
+    transition: var(--transition);
+}
+.admin-search {
+    padding: 10px 15px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--gray-800);
+    min-width: 250px;
+    transition: var(--transition);
+}
+.admin-select:focus,
+.admin-search:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+.admin-search::placeholder {
+    color: var(--gray-500);
+    font-style: italic;
 }
 .analytics-dashboard {
     background: var(--white);
@@ -1428,6 +1522,21 @@ a:hover {
     .dashboard-recent {
         grid-template-columns: 1fr;
     }
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .menu-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    .category-filter {
+        width: 100%;
+        min-width: auto;
+    }
     .analytics-section {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -1455,15 +1564,33 @@ a:hover {
         height: 200px;
         object-fit: cover;
     }
-    .orders-header {
+    .page-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 20px;
     }
-    .order-filters {
+    .filter-controls {
         width: 100%;
-        flex-wrap: wrap;
-        gap: 10px;
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    .admin-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .admin-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    .admin-select,
+    .admin-search,
+    .status-filter {
+        width: 100%;
+        min-width: auto;
     }
     .order-actions {
         justify-content: flex-start;
