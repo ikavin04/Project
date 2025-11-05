@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen - My Orders</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-logo">Smart Canteen</h1>
+            <div class="nav-menu">
+                <button class="hamburger" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="nav-links" id="navLinks">
+                    <a href="user_dashboard.html">Menu</a>
+                    <div class="user-info">
+                        <span id="userName">User</span>
+                        <button onclick="logout()" class="btn btn-small">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div id="notification" class="notification hidden"></div>
+        
+        <div class="orders-header">
+            <h2>My Orders</h2>
+            <div class="orders-filters">
+                <select id="statusFilter" onchange="filterOrders()">
+                    <option value="">All Orders</option>
+                    <option value="Uncompleted">Preparing</option>
+                    <option value="Ready">Ready</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="orders-container" id="ordersContainer">
+            <!-- Orders will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Order Details</h3>
+                <span class="close" onclick="closeOrderModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="orderModalContent">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Check authentication
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else if (currentUser.role === 'admin') {
+            window.location.href = 'admin.html';
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userName').textContent = currentUser.username;
+            loadOrders();
+            startOrderStatusPolling();
+        });
+        
+        function loadOrders() {
+            const orders = getUserOrders();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const ordersContainer = document.getElementById('ordersContainer');
+            
+            let filteredOrders = orders;
+            if (statusFilter) {
+                filteredOrders = orders.filter(order => order.status === statusFilter);
+            }
+            
+            // Sort by timestamp (newest first)
+            filteredOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (filteredOrders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <p>No orders found.</p>
+                        <a href="user_dashboard.html" class="btn btn-primary">Order Now</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            ordersContainer.innerHTML = filteredOrders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-id">
+                            <strong>Order #${order.order_id}</strong>
+                        </div>
+                        <div class="order-status status-${order.status.toLowerCase()}">
+                            ${order.status}
+                        </div>
+                    </div>
+                    
+                    <div class="order-info">
+                        <div class="order-time">
+                            ${new Date(order.timestamp).toLocaleString()}
+                        </div>
+                        <div class="order-amount">
+                            ₹${order.total_amount.toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    <div class="order-items-summary">
+                        <p>${order.items.length} item(s): 
+                        ${order.items.slice(0, 2).map(item => item.name).join(', ')}
+                        ${order.items.length > 2 ? '...' : ''}</p>
+                    </div>
+                    
+                    <div class="order-actions">
+                        <button onclick="viewOrderDetails('${order.order_id}')" class="btn btn-small">
+                            View Details
+                        </button>
+                        ${order.status === 'Ready' || order.status === 'Completed' ? 
+                            `<button onclick="downloadBill('${order.order_id}')" class="btn btn-small btn-secondary">
+                                Download Bill
+                            </button>` : ''
+                        }
+                        ${order.status === 'Uncompleted' ? 
+                            `<div class="order-eta">
+                                <small>Estimated time: 15-20 minutes</small>
+                            </div>` : ''
+                        }
+                        ${order.status === 'Ready' ? 
+                            `<div class="order-notification">
+                                <small class="ready-notification">🟢 Ready for pickup!</small>
+                            </div>` : ''
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function filterOrders() {
+            loadOrders();
+        }
+        
+        function viewOrderDetails(orderId) {
+            const orders = getUserOrders();
+            const order = orders.find(o => o.order_id === orderId);
+            
+            if (!order) {
+                showNotification('Order not found', 'error');
+                return;
+            }
+            
+            document.getElementById('orderModalContent').innerHTML = `
+                <div class="order-detail-info">
+                    <div class="detail-row">
+                        <span class="label">Order ID:</span>
+                        <span class="value">${order.order_id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Date & Time:</span>
+                        <span class="value">${new Date(order.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Status:</span>
+                        <span class="value status-${order.status.toLowerCase()}">${order.status}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Payment Method:</span>
+                        <span class="value">${order.payment_method}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Transaction ID:</span>
+                        <span class="value">${order.transaction_id}</span>
+                    </div>
+                </div>
+                
+                <div class="order-items-detail">
+                    <h4>Items Ordered:</h4>
+                    <div class="items-list">
+                        ${order.items.map(item => `
+                            <div class="item-detail">
+                                <div class="item-info">
+                                    <h5>${item.name}</h5>
+                                    <p>₹${item.price.toFixed(2)} × ${item.quantity}</p>
+                                </div>
+                                <div class="item-total">
+                                    ₹${(item.price * item.quantity).toFixed(2)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-total-detail">
+                        <strong>Total: ₹${order.total_amount.toFixed(2)}</strong>
+                    </div>
+                </div>
+                
+                <div class="order-timeline">
+                    <h4>Order Timeline:</h4>
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>Order Placed</h5>
+                                <p>${new Date(order.timestamp).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item ${order.status !== 'Uncompleted' ? 'completed' : ''}">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>Order Ready</h5>
+                                <p>${order.status !== 'Uncompleted' ? 'Ready for pickup' : 'Being prepared'}</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item ${order.status === 'Completed' ? 'completed' : ''}">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5>Order Completed</h5>
+                                <p>${order.status === 'Completed' ? 'Order picked up' : 'Waiting for pickup'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('orderModal').style.display = 'block';
+        }
+        
+        function closeOrderModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+        
+        function downloadBill(orderId) {
+            const orders = getUserOrders();
+            const order = orders.find(o => o.order_id === orderId);
+            
+            if (!order) {
+                showNotification('Order not found', 'error');
+                return;
+            }
+            
+            if (order.status !== 'Ready' && order.status !== 'Completed') {
+                showNotification('Bill not available yet. Order must be ready first.', 'warning');
+                return;
+            }
+            
+            generateBillPDF(order);
+        }
+        
+        function generateBillPDF(order) {
+            // Create a simple HTML bill and convert to PDF-like format
+            const billContent = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1>KGiSL Institute of Technology</h1>
+                        <h2>Smart Canteen - Order Bill</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr><td style="padding: 5px; font-weight: bold;">Order ID:</td><td style="padding: 5px;">${order.order_id}</td></tr>
+                            <tr><td style="padding: 5px; font-weight: bold;">Customer:</td><td style="padding: 5px;">${currentUser.username}</td></tr>
+                            <tr><td style="padding: 5px; font-weight: bold;">Date:</td><td style="padding: 5px;">${new Date(order.timestamp).toLocaleString()}</td></tr>
+                            <tr><td style="padding: 5px; font-weight: bold;">Transaction ID:</td><td style="padding: 5px;">${order.transaction_id}</td></tr>
+                            <tr><td style="padding: 5px; font-weight: bold;">Payment Method:</td><td style="padding: 5px;">${order.payment_method}</td></tr>
+                            <tr><td style="padding: 5px; font-weight: bold;">Status:</td><td style="padding: 5px;">${order.status}</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3>Order Items:</h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                            <thead>
+                                <tr style="background-color: #f5f5f5;">
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Item</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Quantity</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Unit Price</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${order.items.map(item => `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${item.name}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">₹${item.price.toFixed(2)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                                <tr style="background-color: #f0f0f0; font-weight: bold;">
+                                    <td colspan="3" style="padding: 10px; border: 1px solid #ddd; text-align: right;">Total Amount:</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">₹${order.total_amount.toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; font-style: italic;">
+                        Thank you for using Smart Canteen! Please show this bill when collecting your order.
+                    </div>
+                </div>
+            `;
+            
+            // Create a new window to print the bill
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Bill - ${order.order_id}</title>
+                    <style>
+                        body { margin: 0; padding: 20px; }
+                        @media print {
+                            body { margin: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${billContent}
+                    <div class="no-print" style="text-align: center; margin-top: 20px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; margin: 5px;">Print Bill</button>
+                        <button onclick="window.close()" style="padding: 10px 20px; margin: 5px;">Close</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            
+            showNotification('Bill opened in new window', 'success');
+        }
+        
+        function startOrderStatusPolling() {
+            // Check for status updates every 30 seconds
+            setInterval(() => {
+                const previousOrders = [...getUserOrders()];
+                
+                // Simulate order status updates (in real app, this would poll server)
+                setTimeout(() => {
+                    const currentOrders = getUserOrders();
+                    
+                    // Check for status changes
+                    currentOrders.forEach(currentOrder => {
+                        const previousOrder = previousOrders.find(p => p.order_id === currentOrder.order_id);
+                        if (previousOrder && previousOrder.status !== currentOrder.status) {
+                            if (currentOrder.status === 'Ready') {
+                                showNotification(`Order ${currentOrder.order_id} is ready for pickup!`, 'success');
+                            } else if (currentOrder.status === 'Completed') {
+                                showNotification(`Order ${currentOrder.order_id} has been completed`, 'info');
+                            }
+                            loadOrders(); // Refresh the orders display
+                        }
+                    });
+                }, 100);
+            }, 30000);
+        }
+        
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                closeOrderModal();
+            }
+        }
+    </script>
+</body>
+</html>
