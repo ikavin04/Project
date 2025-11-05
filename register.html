@@ -19,27 +19,31 @@
                 <h2>Register for Smart Canteen</h2>
                 <div id="message" class="message hidden"></div>
                 
-                <form id="registerForm" class="auth-form">
+                <form id="registerForm" class="auth-form" novalidate>
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required minlength="3">
+                        <input type="text" id="username" name="username">
+                        <span class="error-text" id="usernameError"></span>
                         <small>At least 3 characters</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" name="email">
+                        <span class="error-text" id="emailError"></span>
                     </div>
                     
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required minlength="6">
+                        <input type="password" id="password" name="password">
+                        <span class="error-text" id="passwordError"></span>
                         <small>At least 6 characters</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <input type="password" id="confirmPassword" name="confirmPassword">
+                        <span class="error-text" id="confirmPasswordError"></span>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Register</button>
@@ -58,29 +62,56 @@
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Clear previous errors
+            document.getElementById('usernameError').textContent = '';
+            document.getElementById('emailError').textContent = '';
+            document.getElementById('passwordError').textContent = '';
+            document.getElementById('confirmPasswordError').textContent = '';
+            
             const username = document.getElementById('username').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
-            // Validation
-            if (!username || !email || !password) {
-                showMessage('All fields are required', 'error');
-                return;
+            let hasError = false;
+            
+            // Validate username
+            if (!username) {
+                document.getElementById('usernameError').textContent = 'Please enter a username';
+                hasError = true;
+            } else if (username.length < 3) {
+                document.getElementById('usernameError').textContent = 'Username must be at least 3 characters long';
+                hasError = true;
             }
             
-            if (username.length < 3) {
-                showMessage('Username must be at least 3 characters long', 'error');
-                return;
+            // Validate email
+            if (!email) {
+                document.getElementById('emailError').textContent = 'Please enter your email';
+                hasError = true;
+            } else if (!email.includes('@') || !email.includes('.')) {
+                document.getElementById('emailError').textContent = 'Please enter a valid email address';
+                hasError = true;
             }
             
-            if (password.length < 6) {
-                showMessage('Password must be at least 6 characters long', 'error');
-                return;
+            // Validate password
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Please enter a password';
+                hasError = true;
+            } else if (password.length < 6) {
+                document.getElementById('passwordError').textContent = 'Password must be at least 6 characters long';
+                hasError = true;
             }
             
-            if (password !== confirmPassword) {
-                showMessage('Passwords do not match', 'error');
+            // Validate confirm password
+            if (!confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Please confirm your password';
+                hasError = true;
+            } else if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
+                hasError = true;
+            }
+            
+            if (hasError) {
                 return;
             }
             

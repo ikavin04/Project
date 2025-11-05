@@ -424,6 +424,14 @@ a:hover {
     color: var(--gray-500);
     font-size: 12px;
 }
+.error-text {
+    display: block;
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 5px;
+    font-weight: 500;
+    min-height: 18px;
+}
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
